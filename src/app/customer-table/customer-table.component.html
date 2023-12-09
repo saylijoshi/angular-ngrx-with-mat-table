@@ -1,0 +1,90 @@
+ <div class="customer-content">
+    <div class="table-header">
+        <div class="dc-h3 header">
+          Customers ({{customerTotal}})
+        </div>
+        <div class="search-bar">
+          <input class="dc-search" placeholder="Search Customer" (keyup)="filterSubject.next($any($event.target).value)">
+        </div>
+      </div>
+  <div class="table-container">
+   <table mat-table
+       [dataSource]="dataSource" matSort matSortDisableClear="true"
+       [matSortActive]="defaultSort.active" [matSortDirection]="defaultSort.direction" multiTemplateDataRows  matSort
+       matSortDisableClear
+       class="mat-elevation-z8">
+
+  <ng-container matColumnDef="{{column}}" *ngFor="let column of displayedColumns">
+    <ng-container *ngIf="column !== 'action'; else action">
+      <th mat-header-cell *matHeaderCellDef> {{column}} </th>
+      <td mat-cell *matCellDef="let element"> {{element[column]}} </td>
+    </ng-container>
+    <ng-template #action>
+      <th mat-header-cell *matHeaderCellDef> Actions </th>
+      <td mat-cell *matCellDef="let element">
+        <mat-icon
+        (click)="(expandedElement = expandedElement === element ? null : element);">{{expandedElement === element ? 'expand_less' : 'expand_more'}}</mat-icon>
+      </td>
+    </ng-template>
+  </ng-container>
+
+  <!-- Expanded Content Column - The detail row is made up of this one column that spans across all columns -->
+  <ng-container matColumnDef="expandedDetail">
+    <td mat-cell *matCellDef="let element" [attr.colspan]="displayedColumns.length">
+      <div class="example-element-detail"
+           [@detailExpand]="element == expandedElement ? 'expanded' : 'collapsed'">
+         <form [formGroup]="form" class="row" style="width:95vw" *ngIf="((element == expandedElement)&&form)">
+          <div class="row col-md-12" style="display: contents; padding: 20px;">
+            <div *ngFor="let prop of personProps" class="col-md-3"> 
+              <div class="form-group">
+                <label for="{{prop.id}}">{{prop}}</label>
+                <input type="text" class="form-control"  [formControlName]="prop" >
+              </div>
+            </div>
+          </div>
+          <br/><br/>&nbsp;&nbsp; 
+          <div class="row" style="height: 37px;margin:100px 0;">
+            <div style="text-align:center">
+              <button  class="btn btn-primary" (click)="save()">
+                <i class="fa" [ngClass]="{'fa-spin fa-spinner': btnloading, 'fa-check': !btnloading}"></i> Save
+              </button>
+            </div>&nbsp;&nbsp;
+            <button class="btn" style="white-space: pre-line;" >Cancel</button> 
+          </div>
+        </form>
+      </div>
+    </td>
+  </ng-container>
+  <ng-container matColumnDef="noData">
+    <td mat-cell class="dc-label no-data-cell" *matCellDef="let element"
+      [attr.colspan]="displayedColumns.length">
+      <ng-container *ngIf="!(error$ | async) && !loading">
+        <span class="dc-content">No Customers</span>
+      </ng-container>
+      <ng-container *ngIf="(error$ | async) && !loading">
+        <span class="dc-label">System Failure</span>
+        <span class="dc-content">Error</span>
+        <span class="retry" (click)="retry()">Retry</span>
+      </ng-container>
+      <ng-container *ngIf="loading">
+          <span class="dc-label">Retrieving data...</span>  
+        </ng-container>
+    </td>
+  </ng-container>
+  <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+  <ng-container *ngIf="customerTotal && !loading">
+    <tr mat-row *matRowDef="let element; columns: displayedColumns;"
+      class="example-element-row"
+      [class.example-expanded-row]="expandedElement === element"  (click)="toggleExpandableSymbol(element,element.id)" >
+  </tr>
+  <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="example-detail-row"></tr>
+  </ng-container>
+  <ng-container *ngIf="!customerTotal || loading">
+    <tr mat-row *matRowDef="let row; columns: ['noData'];"class="no-data-row" ></tr>
+  </ng-container>
+</table>
+
+    <mat-paginator [length]="customerTotal" [pageSize]="3"  [pageSizeOptions]="[3, 5, 10]"></mat-paginator>
+  </div>
+</div> 
+
